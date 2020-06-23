@@ -9,14 +9,66 @@
  for you to use if you need it!
  */
 
-let allWagesFor = function () {
-    let eligibleDates = this.timeInEvents.map(function (e) {
-        return e.date
+function createEmployeeRecord(employeeInfo) {
+    return {
+        firstName: employeeInfo[0],
+        familyName: employeeInfo[1],
+        title: employeeInfo[2],
+        payPerHour: employeeInfo[3],
+        timeInEvents: [],
+        timeOutEvents: []
+    }
+}
+
+function createEmployeeRecords(employees) {
+    return employees.map((employee) => createEmployeeRecord(employee))
+}
+
+function createTimeInEvent(dateStamp) {
+    this.timeInEvents.push( {
+        type: "TimeIn",
+        hour: parseInt(dateStamp.split(' ')[1]),
+        date: dateStamp.split(' ')[0]
     })
+    return this
+}
 
-    let payable = eligibleDates.reduce(function (memo, d) {
-        return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
+function createTimeOutEvent(dateStamp) {
+    this.timeOutEvents.push( {
+        type: "TimeOut",
+        hour: parseInt(dateStamp.split(' ')[1]),
+        date: dateStamp.split(' ')[0]
+    })
+    return this
+}
 
-    return payable
+function hoursWorkedOnDate(dateStamp) {
+    // console.log("********")
+    // console.log(this)
+    // console.log("********")
+    const timeInEvent = this.timeInEvents.find((event) => event.date == dateStamp.split(' ')[0])
+    const timeOutEvent = this.timeOutEvents.find((event) => event.date == dateStamp.split(' ')[0])
+    return (timeOutEvent.hour - timeInEvent.hour) / 100
+}
+
+function wagesEarnedOnDate(dateStamp) {
+    // console.log("--------")
+    // console.log(this)
+    // console.log("--------")
+    return hoursWorkedOnDate.call(this, dateStamp) * this.payPerHour
+}
+
+let allWagesFor = function() {
+    return this.timeInEvents.reduce(function(wages, timeInEvent) {
+        let dateStamp = timeInEvent.date + ' ' + timeInEvent.hour
+        return wages + wagesEarnedOnDate.call(this, dateStamp)
+    }.bind(this), 0)
+}
+
+function findEmployeeByFirstName(srcArray, firstName) {
+    return srcArray.find((employee) => employee.firstName == firstName)
+}
+
+function calculatePayroll(employees) {
+    return employees.reduce((payroll, employee) => payroll + allWagesFor.call(employee), 0)
 }
