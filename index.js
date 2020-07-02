@@ -1,22 +1,70 @@
-/* Your Code Here */
+let createEmployeeRecord = function (employeeArray){
+    return {
+        firstName: employeeArray[0],
+        familyName: employeeArray[1],
+        title: employeeArray[2],
+        payPerHour: employeeArray[3],
+        timeInEvents: [],
+        timeOutEvents: []
+    };
+};
 
-/*
- We're giving you this function. Take a look at it, you might see some usage
- that's new and different. That's because we're avoiding a well-known, but
- sneaky bug that we'll cover in the next few lessons!
+let createEmployeeRecords = function (employeesArray){
+    return employeesArray.map(employee => createEmployeeRecord(employee));
+};
 
- As a result, the lessons for this function will pass *and* it will be available
- for you to use if you need it!
- */
+let createTimeInEvent = function (dateStamp){
+    const [date, hour] = dateStamp.split(' ');
 
-let allWagesFor = function () {
-    let eligibleDates = this.timeInEvents.map(function (e) {
-        return e.date
-    })
+    this.timeInEvents.push({
+        type: 'TimeIn',
+        hour: parseInt(hour, 10),
+        date,
+    });
 
-    let payable = eligibleDates.reduce(function (memo, d) {
-        return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
+    return this;
+};
 
-    return payable
-}
+let createTimeOutEvent = function(dateStamp){
+    const [date, hour] = dateStamp.split(' ');
+
+    this.timeOutEvents.push({
+        type: 'TimeOut',
+        hour: parseInt(hour, 10),
+        date,
+    });
+    return this;
+};
+
+let hoursWorkedOnDate = function(dateStamp){
+    return (this.timeOutEvents.filter(event => { return event.date === dateStamp})[0].hour 
+    - this.timeInEvents.filter(event => {return event.date === dateStamp})[0].hour)
+    / 100;
+};
+
+let wagesEarnedOnDate = function(dateStamp){
+    return hoursWorkedOnDate.call(this, dateStamp)*this.payPerHour;
+};
+
+let findEmployeeByFirstName = function(srcArray, firstName){
+    return srcArray.filter(employee => employee.firstName)[0];
+};
+
+let allWagesFor = function (){
+    let totalArray = [];
+    let total = 0;
+
+    totalArray = this.timeInEvents.map(e => wagesEarnedOnDate.call(this, e.date));
+    totalArray.forEach(e => total += e);
+
+    return total;
+};
+
+let calculatePayroll = function (srcArray){
+    let allEmployeeWages = srcArray.map(employee => allWagesFor.call(employee));
+    let total = 0;
+
+    allEmployeeWages.forEach(employeeTotal => total += employeeTotal);
+
+    return total;
+};
